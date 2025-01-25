@@ -1,10 +1,6 @@
 import { Octokit } from "@octokit/rest";
 
-export async function getDefaultBranch(
-  octokit: Octokit,
-  owner: string,
-  repo: string
-): Promise<string> {
+export async function getDefaultBranch(octokit: Octokit, owner: string, repo: string): Promise<string> {
   try {
     const { data: repository } = await octokit.repos.get({
       owner,

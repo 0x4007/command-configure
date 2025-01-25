@@ -5,11 +5,7 @@ import { getDefaultBranch } from "./sync-configs/get-default-branch";
 import { syncConfigsNonInteractive } from "./sync-configs/sync-configs-non-interactive";
 
 export async function syncConfigs(context: Context) {
-  const {
-    logger,
-    payload,
-    octokit
-  } = context;
+  const { logger, payload, octokit } = context;
 
   // Cast octokit to the correct type
   const octokitClient = octokit as unknown as Octokit;
@@ -39,7 +35,6 @@ export async function syncConfigs(context: Context) {
     const changes = await syncConfigsNonInteractive(octokitClient, owner, repo, defaultBranch);
 
     await postComment(context, logger.ok(`Configuration sync completed. Changes made:\n${JSON.stringify(changes, null, 2)}`));
-
   } catch (error) {
     const err = error as Error;
     const errorMessage = err.message || "An unknown error occurred";

@@ -99,10 +99,7 @@ plugins:
     - plugin: http://github.com/org/repo2
 `;
     const result = parsePluginUrls(input);
-    expect(result).toEqual([
-      "http://github.com/org/repo1/manifest.json",
-      "http://github.com/org/repo2/manifest.json"
-    ]);
+    expect(result).toEqual(["http://github.com/org/repo1/manifest.json", "http://github.com/org/repo2/manifest.json"]);
   });
 
   it("getDefaultBranch returns main as fallback", async () => {
@@ -119,12 +116,7 @@ plugins:
     const parserCode = "function parseConfig(yaml) { return yaml; }";
     const repoUrl = "https://github.com/org/repo";
 
-    const modified = await getModifiedContent(
-      original,
-      instruction,
-      parserCode,
-      repoUrl
-    );
+    const modified = await getModifiedContent(original, instruction, parserCode, repoUrl);
     expect(modified).toBeTruthy();
   });
 });
@@ -204,7 +196,7 @@ function createContextInner(
       EDITOR_INSTRUCTION: "test-instruction",
       INTERACTIVE: "true",
       ACTOR: "test-actor",
-      EMAIL: "test@example.com"
+      EMAIL: "test@example.com",
     } as Env,
     octokit: octokit,
   } as unknown as Context;

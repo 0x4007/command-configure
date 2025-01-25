@@ -28968,7 +28968,7 @@ var ue = class {
     const r = e.strict ?? true;
     delete e.strict;
     Object.assign(this, e);
-    this.getPath = r ? (e.getPath ?? getPath) : getPathNoStrict;
+    this.getPath = r ? e.getPath ?? getPath : getPathNoStrict;
   }
   #O() {
     const e = new ue({ router: this.router, getPath: this.getPath });
@@ -29075,7 +29075,7 @@ var ue = class {
       } catch (e) {
         return this.#L(e, A);
       }
-      return e instanceof Promise ? e.then((e) => e || (A.finalized ? A.res : this.#v(A))).catch((e) => this.#L(e, A)) : (e ?? this.#v(A));
+      return e instanceof Promise ? e.then((e) => e || (A.finalized ? A.res : this.#v(A))).catch((e) => this.#L(e, A)) : e ?? this.#v(A);
     }
     const i = compose(n[0], this.errorHandler, this.#v);
     return (async () => {
@@ -29549,7 +29549,7 @@ var we = class {
           for (let e = 0, t = i.possibleKeys.length; e < t; e++) {
             const t = i.possibleKeys[e];
             const o = a[i.score];
-            i.params[t] = s?.[t] && !o ? s[t] : (r[t] ?? s?.[t]);
+            i.params[t] = s?.[t] && !o ? s[t] : r[t] ?? s?.[t];
             a[i.score] = true;
           }
         }

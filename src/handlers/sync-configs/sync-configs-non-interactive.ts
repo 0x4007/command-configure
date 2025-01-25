@@ -7,14 +7,14 @@ const DEFAULT_TARGETS = [
     owner: "ubiquity",
     repo: "default-configs",
     type: "parser",
-    filePath: "src/parser.ts"
+    filePath: "src/parser.ts",
   },
   {
     owner: "ubiquity",
     repo: "ubiquibot",
     type: "target",
-    filePath: "config.json"
-  }
+    filePath: "config.json",
+  },
 ];
 
 export interface SyncResult {
@@ -26,15 +26,10 @@ export interface SyncResult {
   }[];
 }
 
-export async function syncConfigsNonInteractive(
-  octokit: Octokit,
-  owner: string,
-  repo: string,
-  branch: string
-): Promise<SyncResult[]> {
+export async function syncConfigsNonInteractive(octokit: Octokit, owner: string, repo: string, branch: string): Promise<SyncResult[]> {
   try {
     // First get the parser code
-    const parserRepo = DEFAULT_TARGETS.find(t => t.type === "parser");
+    const parserRepo = DEFAULT_TARGETS.find((t) => t.type === "parser");
     if (!parserRepo) {
       throw new Error("Parser repository configuration not found");
     }
@@ -43,14 +38,14 @@ export async function syncConfigsNonInteractive(
       owner: parserRepo.owner,
       repo: parserRepo.repo,
       path: parserRepo.filePath,
-      ref: "main" // Assuming main branch for parser
+      ref: "main", // Assuming main branch for parser
     });
 
     if (!("content" in parserContent)) {
       throw new Error("Parser file not found or is a directory");
     }
 
-    const parserCode = Buffer.from(parserContent.content, 'base64').toString();
+    const parserCode = Buffer.from(parserContent.content, "base64").toString();
 
     // Process each target repository
     const results: SyncResult[] = [];

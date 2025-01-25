@@ -9,7 +9,7 @@ const config: KnipConfig = {
     // Test files
     "tests/**/*.ts",
     // Dev scripts
-    "tests/dev-start.ts"
+    "tests/dev-start.ts",
   ],
   project: ["src/**/*.ts", "tests/**/*.ts"],
   ignore: ["src/types/config.ts", "**/__mocks__/**", "**/__fixtures__/**", "dist/*"],

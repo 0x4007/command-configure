@@ -15,8 +15,8 @@ export const pluginSettingsSchema = T.Object(
       apiKey: T.String(),
       model: T.String({ default: "claude-3-sonnet-20240229" }),
       maxTokens: T.Number({ default: 4000 }),
-      temperature: T.Number({ default: 0 })
-    })
+      temperature: T.Number({ default: 0 }),
+    }),
   },
   { default: {} }
 );

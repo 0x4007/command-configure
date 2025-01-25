@@ -99,5 +99,6 @@
     "skipLibCheck": true /* Skip type checking all .d.ts files. */,
     "resolveJsonModule": true
   },
-  "exclude": ["dist", "coverage"]
+  "include": ["src/**/*", "tests/**/*", ".github/**/*", "*.ts"],
+  "exclude": ["dist", "coverage", "node_modules"]
 }

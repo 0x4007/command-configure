@@ -18,7 +18,7 @@ export const envSchema = T.Object({
   EDITOR_INSTRUCTION: T.String({ default: "insert all missing defaults" }),
   INTERACTIVE: T.String({ default: "false" }),
   ACTOR: T.String({ default: "ubiquity-os[bot]" }),
-  EMAIL: T.String({ default: "ubiquity-os[bot]@users.noreply.github.com" })
+  EMAIL: T.String({ default: "ubiquity-os[bot]@users.noreply.github.com" }),
 });
 
 export type Env = StaticDecode<typeof envSchema>;
