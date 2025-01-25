@@ -1,4 +1,4 @@
-name: "the name of the plugin"
+name: "UbiquityOS Sync Config Agent"
 
 on:
   workflow_dispatch:
@@ -22,7 +22,7 @@ on:
 
 jobs:
   compute:
-    name: "plugin name"
+    name: "command-config"
     runs-on: ubuntu-latest
     permissions: write-all
     environment: ${{ github.ref == 'refs/heads/main' && 'main' || 'development' }}
@@ -37,9 +37,9 @@ jobs:
         with:
           bun-version: latest
 
-      - name: execute directive
+      - name: start plugin
         run: bun ./dist/index.js
-        id: plugin-name
+        id: ubiquity-os-plugin-runtime
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}

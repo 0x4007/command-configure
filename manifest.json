@@ -1,7 +1,9 @@
 {
   "name": "config",
   "description": "A plugin to sync configuration files across repositories using Claude.",
-  "ubiquity:listeners": ["issue_comment.created"],
+  "ubiquity:listeners": [
+    "issue_comment.created"
+  ],
   "commands": {
     "config": {
       "ubiquity:example": "/config initialize all default values",
@@ -12,31 +14,13 @@
     "default": {},
     "type": "object",
     "properties": {
-      "claude": {
-        "type": "object",
-        "properties": {
-          "apiKey": {
-            "type": "string",
-            "description": "Claude API key for configuration updates"
-          },
-          "model": {
-            "type": "string",
-            "default": "claude-3-sonnet-20240229",
-            "description": "Claude model to use"
-          },
-          "maxTokens": {
-            "type": "number",
-            "default": 4000,
-            "description": "Maximum tokens for Claude response"
-          },
-          "temperature": {
-            "type": "number",
-            "default": 0,
-            "description": "Temperature for Claude response"
-          }
-        },
-        "required": ["apiKey"]
+      "claudeApiKey": {
+        "type": "string",
+        "description": "Claude API key for configuration updates"
       }
-    }
+    },
+    "required": [
+      "claudeApiKey"
+    ]
   }
 }

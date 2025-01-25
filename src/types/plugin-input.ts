@@ -9,14 +9,9 @@ import { StaticDecode, Type as T } from "@sinclair/typebox";
  */
 export const pluginSettingsSchema = T.Object(
   {
-    configurableResponse: T.String({ default: "Hello, world!" }),
-    customStringsUrl: T.Optional(T.String()),
-    claude: T.Object({
-      apiKey: T.String(),
-      model: T.String({ default: "claude-3-sonnet-20240229" }),
-      maxTokens: T.Number({ default: 4000 }),
-      temperature: T.Number({ default: 0 }),
-    }),
+    // configurableResponse: T.String({ default: "Hello, world!" }),
+    // customStringsUrl: T.Optional(T.String()),
+    claudeApiKey: T.String(),
   },
   { default: {} }
 );
