@@ -1,8 +1,8 @@
-import { Octokit } from "@octokit/rest";
+import { appAuthenticatedOctokit } from "./create-pull-request";
 
-export async function getDefaultBranch(octokit: Octokit, owner: string, repo: string): Promise<string> {
+export async function getDefaultBranch(owner: string, repo: string): Promise<string> {
   try {
-    const { data: repository } = await octokit.repos.get({
+    const { data: repository } = await appAuthenticatedOctokit.repos.get({
       owner,
       repo,
     });

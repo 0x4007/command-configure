@@ -1,8 +1,8 @@
 import { Octokit } from "@octokit/rest";
 import { postComment } from "@ubiquity-os/plugin-sdk";
 import { Context } from "../types";
-import { getDefaultBranch } from "./sync-configs/get-default-branch";
 import { syncConfigsNonInteractive } from "./sync-configs/sync-configs-non-interactive";
+import { targets } from "./sync-configs/targets";
 
 export async function syncConfigs(context: Context) {
   const { logger, payload, octokit } = context;
@@ -26,12 +26,10 @@ export async function syncConfigs(context: Context) {
   try {
     // We'll use the octokit client instead of raw git operations
     // This is a simplified version that works within the plugin architecture
-    const defaultBranch = await getDefaultBranch(octokitClient, owner, repo);
-
     await postComment(context, logger.ok("Starting configuration sync process..."));
 
     // Run in non-interactive mode since this is automated
-    const changes = await syncConfigsNonInteractive(octokitClient, owner, repo, defaultBranch);
+    const changes = await syncConfigsNonInteractive(octokitClient, targets);
 
     await postComment(context, logger.ok(`Configuration sync completed. Changes made:\n${JSON.stringify(changes, null, 2)}`));
   } catch (error) {

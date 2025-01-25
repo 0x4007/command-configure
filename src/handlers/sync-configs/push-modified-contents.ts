@@ -1,9 +1,8 @@
 import * as fs from "fs";
 import path from "path";
-import { applyChanges } from "./apply-changes";
-import { getDefaultBranch } from "./get-default-branch";
+import { applyChangesNonInteractive } from "./apply-changes";
 import { LAST_RUN_INSTRUCTION } from "./process-repositories";
-import { STORAGE_DIR } from "./sync-configs";
+import { STORAGE_DIR } from "./sync-configs-agent";
 import { targets } from "./targets";
 
 export async function pushModifiedContents() {
@@ -16,14 +15,11 @@ export async function pushModifiedContents() {
 
     if (fs.existsSync(modifiedFilePath)) {
       const modifiedContent = fs.readFileSync(modifiedFilePath, "utf8");
-      const defaultBranch = await getDefaultBranch(target.url);
-      await applyChanges({
+      await applyChangesNonInteractive({
         target,
         filePath,
         modifiedContent,
         instruction: fs.readFileSync(path.join(__dirname, STORAGE_DIR, [`Rerunning using \`--push\` flag.`, LAST_RUN_INSTRUCTION].join("\n\n")), "utf8"),
-        isInteractive: false,
-        forceBranch: defaultBranch,
       });
     } else {
       console.log(`No modified file found for ${target.url}. Skipping.`);

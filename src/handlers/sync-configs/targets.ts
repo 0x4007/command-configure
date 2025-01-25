@@ -40,7 +40,7 @@ export const targets: Target[] = targetUrls.flatMap(({ type, url }) => {
   if (isKernel) {
     return [
       {
-        type,
+        type: type as Target["type"],
         owner,
         repo,
         localDir,
@@ -53,7 +53,7 @@ export const targets: Target[] = targetUrls.flatMap(({ type, url }) => {
   // Always return both prod and dev configs
   return [
     {
-      type,
+      type: type as Target["type"],
       owner,
       repo,
       localDir,
@@ -61,7 +61,7 @@ export const targets: Target[] = targetUrls.flatMap(({ type, url }) => {
       filePath: CONFIG_FULL_PATH,
     },
     {
-      type,
+      type: type as Target["type"],
       owner,
       repo,
       localDir,
@@ -72,7 +72,7 @@ export const targets: Target[] = targetUrls.flatMap(({ type, url }) => {
 });
 
 export type Target = {
-  type: string;
+  type: "parser" | "config";
   owner: string;
   repo: string;
   localDir: string;

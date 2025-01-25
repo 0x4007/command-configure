@@ -12,9 +12,32 @@ const config: KnipConfig = {
     "tests/dev-start.ts",
   ],
   project: ["src/**/*.ts", "tests/**/*.ts"],
-  ignore: ["src/types/config.ts", "**/__mocks__/**", "**/__fixtures__/**", "dist/*"],
+  ignore: [
+    "src/types/config.ts",
+    "**/__mocks__/**",
+    "**/__fixtures__/**",
+    "dist/*"
+  ],
   ignoreExportsUsedInFile: true,
-  ignoreDependencies: ["ts-node"], // Only ignore ts-node as it's used by the runtime
+  ignoreDependencies: [
+    // Runtime dependencies
+    "ts-node",
+    "nodemon", // Used for development watching
+    "@octokit/auth-app", // Used for GitHub authentication
+    "inquirer", // Used for interactive prompts
+    // Dev dependencies used in configuration
+    "@eslint/js",
+    "@typescript-eslint/eslint-plugin",
+    "@typescript-eslint/parser",
+    "esbuild",
+    "eslint-config-prettier",
+    "eslint-plugin-check-file",
+    "eslint-plugin-filename-rules",
+    "eslint-plugin-prettier",
+    "eslint-plugin-sonarjs",
+    "tsx",
+    "typescript-eslint"
+  ],
   eslint: true,
 };
 

@@ -1,21 +1,13 @@
-import { Octokit } from "@octokit/rest";
+import { appAuthenticatedOctokit } from "./create-pull-request";
+import { getDefaultBranch } from "./get-default-branch";
 import { processConfigurationRepository } from "./process-configuration-repository";
 
-// These would typically come from environment variables or configuration
-const DEFAULT_TARGETS = [
-  {
-    owner: "ubiquity",
-    repo: "default-configs",
-    type: "parser",
-    filePath: "src/parser.ts",
-  },
-  {
-    owner: "ubiquity",
-    repo: "ubiquibot",
-    type: "target",
-    filePath: "config.json",
-  },
-];
+export interface Target {
+  owner: string;
+  repo: string;
+  type: "parser" | "config";
+  filePath: string;
+}
 
 export interface SyncResult {
   repository: string;
@@ -26,19 +18,22 @@ export interface SyncResult {
   }[];
 }
 
-export async function syncConfigsNonInteractive(octokit: Octokit, owner: string, repo: string, branch: string): Promise<SyncResult[]> {
+export async function syncConfigsNonInteractive(targets: Target[]): Promise<SyncResult[]> {
   try {
     // First get the parser code
-    const parserRepo = DEFAULT_TARGETS.find((t) => t.type === "parser");
+    const parserRepo = targets.find((t) => t.type === "parser");
     if (!parserRepo) {
       throw new Error("Parser repository configuration not found");
     }
 
-    const { data: parserContent } = await octokit.repos.getContent({
+    // Get default branch for parser repo
+    const parserDefaultBranch = await getDefaultBranch(parserRepo.owner, parserRepo.repo);
+
+    const { data: parserContent } = await appAuthenticatedOctokit.repos.getContent({
       owner: parserRepo.owner,
       repo: parserRepo.repo,
       path: parserRepo.filePath,
-      ref: "main", // Assuming main branch for parser
+      ref: parserDefaultBranch,
     });
 
     if (!("content" in parserContent)) {
@@ -49,14 +44,12 @@ export async function syncConfigsNonInteractive(octokit: Octokit, owner: string,
 
     // Process each target repository
     const results: SyncResult[] = [];
-    for (const target of DEFAULT_TARGETS) {
-      if (target.type === "target") {
+    for (const target of targets) {
+      if (target.type === "config") {
         const result = await processConfigurationRepository(
-          octokit,
           target,
           "insert all missing defaults", // Default instruction
-          parserCode,
-          branch
+          parserCode
         );
         results.push(result);
       }

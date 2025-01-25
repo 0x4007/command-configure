@@ -3,7 +3,7 @@ import path from "path";
 import simpleGit, { SimpleGit } from "simple-git";
 import { createPullRequest } from "./create-pull-request";
 import { getDefaultBranch } from "./get-default-branch";
-import { STORAGE_DIR } from "./sync-configs";
+import { STORAGE_DIR } from "./sync-configs-agent";
 import { Target } from "./targets";
 
 function initializeGit(localDir: string): SimpleGit {
@@ -41,13 +41,11 @@ export async function applyChangesInteractive({
   filePath,
   modifiedContent,
   instruction,
-  forceBranch,
 }: {
   target: Target;
   filePath: string;
   modifiedContent: string;
   instruction: string;
-  forceBranch?: string;
 }) {
   const git = initializeGit(target.localDir);
   const isGitHubActions = !!process.env.GITHUB_ACTIONS;
@@ -55,7 +53,7 @@ export async function applyChangesInteractive({
   console.log(`Operating in ${isGitHubActions ? "GitHub Actions" : "local"} environment`);
 
   await setupAuthentication(git, target.url);
-  const defaultBranch = forceBranch || (await getDefaultBranch(target.url));
+  const defaultBranch = await getDefaultBranch(target.owner, target.repo);
 
   await git.checkout(defaultBranch);
   await git.pull("origin", defaultBranch);
@@ -85,13 +83,11 @@ export async function applyChangesNonInteractive({
   filePath,
   modifiedContent,
   instruction,
-  forceBranch,
 }: {
   target: Target;
   filePath: string;
   modifiedContent: string;
   instruction: string;
-  forceBranch?: string;
 }) {
   const git = initializeGit(target.localDir);
   const isGitHubActions = !!process.env.GITHUB_ACTIONS;
@@ -100,7 +96,7 @@ export async function applyChangesNonInteractive({
   console.log(`Operating in ${isGitHubActions ? "GitHub Actions" : "local"} environment`);
 
   await setupAuthentication(git, target.url);
-  const defaultBranch = forceBranch || (await getDefaultBranch(target.url));
+  const defaultBranch = await getDefaultBranch(target.owner, target.repo);
 
   await git.checkout(defaultBranch);
   await git.pull("origin", defaultBranch);

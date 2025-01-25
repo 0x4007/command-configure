@@ -1,4 +1,5 @@
-import { Octokit } from "@octokit/rest";
+import { appAuthenticatedOctokit } from "./create-pull-request";
+import { getDefaultBranch } from "./get-default-branch";
 import { getModifiedContent } from "./get-modified-content";
 
 interface Target {
@@ -8,14 +9,14 @@ interface Target {
   filePath: string;
 }
 
-export async function processConfigurationRepository(octokit: Octokit, target: Target, instruction: string, parserCode: string, branch: string) {
+export async function processConfigurationRepository(target: Target, instruction: string, parserCode: string) {
   try {
     // Get current file content
-    const { data: fileData } = await octokit.repos.getContent({
+    const { data: fileData } = await appAuthenticatedOctokit.repos.getContent({
       owner: target.owner,
       repo: target.repo,
       path: target.filePath,
-      ref: branch,
+      ref: await getDefaultBranch(target.owner, target.repo),
     });
 
     if (!("content" in fileData)) {
@@ -38,15 +39,17 @@ export async function processConfigurationRepository(octokit: Octokit, target: T
     const timestamp = new Date().getTime();
     const newBranch = `sync-configs-${timestamp}`;
 
+    const branch = await getDefaultBranch(target.owner, target.repo);
+
     // Get the current commit SHA
-    const { data: ref } = await octokit.git.getRef({
+    const { data: ref } = await appAuthenticatedOctokit.git.getRef({
       owner: target.owner,
       repo: target.repo,
       ref: `heads/${branch}`,
     });
 
     // Create new branch
-    await octokit.git.createRef({
+    await appAuthenticatedOctokit.git.createRef({
       owner: target.owner,
       repo: target.repo,
       ref: `refs/heads/${newBranch}`,
@@ -54,14 +57,14 @@ export async function processConfigurationRepository(octokit: Octokit, target: T
     });
 
     // Create commit with changes
-    const { data: blob } = await octokit.git.createBlob({
+    const { data: blob } = await appAuthenticatedOctokit.git.createBlob({
       owner: target.owner,
       repo: target.repo,
       content: modifiedContent,
       encoding: "utf-8",
     });
 
-    const { data: tree } = await octokit.git.createTree({
+    const { data: tree } = await appAuthenticatedOctokit.git.createTree({
       owner: target.owner,
       repo: target.repo,
       base_tree: ref.object.sha,
@@ -75,7 +78,7 @@ export async function processConfigurationRepository(octokit: Octokit, target: T
       ],
     });
 
-    const { data: commit } = await octokit.git.createCommit({
+    const { data: commit } = await appAuthenticatedOctokit.git.createCommit({
       owner: target.owner,
       repo: target.repo,
       message: `Sync configurations\n\nAutomatically synced configurations using sync-configs plugin`,
@@ -84,7 +87,7 @@ export async function processConfigurationRepository(octokit: Octokit, target: T
     });
 
     // Update branch reference
-    await octokit.git.updateRef({
+    await appAuthenticatedOctokit.git.updateRef({
       owner: target.owner,
       repo: target.repo,
       ref: `heads/${newBranch}`,
@@ -92,7 +95,7 @@ export async function processConfigurationRepository(octokit: Octokit, target: T
     });
 
     // Create pull request
-    await octokit.pulls.create({
+    await appAuthenticatedOctokit.pulls.create({
       owner: target.owner,
       repo: target.repo,
       title: "Sync configurations",

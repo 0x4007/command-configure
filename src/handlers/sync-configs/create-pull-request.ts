@@ -19,7 +19,21 @@ interface OctokitError extends Error {
     data: OctokitErrorResponse;
   };
 }
-
+export let appAuthenticatedOctokit: Octokit;
+class AppAuthenticatedOctokit {
+  client: Octokit;
+  constructor(appId: string, privateKey: string) {
+    // Create Octokit instance with GitHub App authentication
+    this.client = new Octokit({
+      authStrategy: createAppAuth,
+      auth: {
+        appId,
+        privateKey,
+        installationId: process.env.APP_INSTALLATION_ID,
+      },
+    });
+  }
+}
 export async function createPullRequest({
   target,
   branchName,
@@ -39,15 +53,7 @@ export async function createPullRequest({
     throw new Error("GitHub App credentials (APP_ID, APP_PRIVATE_KEY) are not set");
   }
 
-  // Create Octokit instance with GitHub App authentication
-  const octokit = new Octokit({
-    authStrategy: createAppAuth,
-    auth: {
-      appId,
-      privateKey,
-      installationId: process.env.APP_INSTALLATION_ID,
-    },
-  });
+  appAuthenticatedOctokit = new AppAuthenticatedOctokit(appId, privateKey).client;
 
   // Log which installation we're using
   console.log(`Using installation ID: ${process.env.APP_INSTALLATION_ID} for ${target.owner}/${target.repo}`);
@@ -58,7 +64,7 @@ export async function createPullRequest({
   const configFileName = target.filePath.split("/").pop();
 
   try {
-    const response = await octokit.pulls.create({
+    const response = await appAuthenticatedOctokit.pulls.create({
       owner: target.owner,
       repo: target.repo,
       title: `chore: update \`${configFileName}\``,

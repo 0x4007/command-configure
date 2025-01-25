@@ -1,8 +1,9 @@
 import * as fs from "fs";
 import * as path from "path";
 import simpleGit, { SimpleGit } from "simple-git";
-import { STORAGE_DIR } from "./sync-configs";
+import { STORAGE_DIR } from "./sync-configs-agent";
 import { Target } from "./targets";
+import { getDefaultBranch } from "./get-default-branch";
 
 // Clean up any stale git lock files
 function cleanupGitLocks(repoPath: string) {
@@ -20,7 +21,7 @@ function cleanupGitLocks(repoPath: string) {
   }
 }
 
-export async function cloneOrPullRepo(target: Target, defaultBranch: string): Promise<void> {
+export async function cloneOrPullRepo(target: Target): Promise<void> {
   const repoPath = path.join(__dirname, STORAGE_DIR, target.localDir);
   const token = process.env.AUTH_TOKEN;
 
@@ -42,6 +43,8 @@ export async function cloneOrPullRepo(target: Target, defaultBranch: string): Pr
         // Configure git locally with bot identity
         await git.addConfig("user.name", "ubiquity-os[bot]", false, "local");
         await git.addConfig("user.email", "ubiquity-os[bot]@users.noreply.github.com", false, "local");
+
+        const defaultBranch = await getDefaultBranch(target.owner, target.repo);
 
         console.log(`Fetching updates for ${target.url}...`);
         await git.fetch("origin");
