@@ -1,8 +1,6 @@
-import { Octokit } from "@octokit/rest";
 import * as fs from "fs";
 import * as path from "path";
 import { cloneOrPullRepo } from "./clone-or-pull-repo";
-import { getDefaultBranch } from "./get-default-branch";
 import { pushModifiedContents } from "./push-modified-contents";
 import { syncConfigsInteractive } from "./sync-configs-interactive";
 import { syncConfigsNonInteractive } from "./sync-configs-non-interactive";
@@ -37,7 +35,7 @@ async function setupRepos() {
   }
 
   const clonePromises = targets.map(async (repo) => {
-    return cloneOrPullRepo(repo, );
+    return cloneOrPullRepo(repo);
   });
 
   await Promise.all(clonePromises);

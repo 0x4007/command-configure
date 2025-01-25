@@ -11,6 +11,7 @@
   },
   "scripts": {
     "build": "tsc --project tsconfig.json",
+    "build:test": "tsc --noEmit",
     "format": "run-p format:*",
     "check-formatting": "run-p check-formatting:* format:cspell",
     "check-formatting:lint": "eslint --fix-dry-run src/ --config ./eslint.config.mjs",

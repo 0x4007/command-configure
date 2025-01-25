@@ -1,14 +1,10 @@
-import { Octokit } from "@octokit/rest";
 import { postComment } from "@ubiquity-os/plugin-sdk";
 import { Context } from "../types";
 import { syncConfigsNonInteractive } from "./sync-configs/sync-configs-non-interactive";
 import { targets } from "./sync-configs/targets";
 
 export async function syncConfigs(context: Context) {
-  const { logger, payload, octokit } = context;
-
-  // Cast octokit to the correct type
-  const octokitClient = octokit as unknown as Octokit;
+  const { logger, payload } = context;
 
   const sender = payload.comment.user?.login;
   const repo = payload.repository.name;
@@ -29,7 +25,7 @@ export async function syncConfigs(context: Context) {
     await postComment(context, logger.ok("Starting configuration sync process..."));
 
     // Run in non-interactive mode since this is automated
-    const changes = await syncConfigsNonInteractive(octokitClient, targets);
+    const changes = await syncConfigsNonInteractive(targets);
 
     await postComment(context, logger.ok(`Configuration sync completed. Changes made:\n${JSON.stringify(changes, null, 2)}`));
   } catch (error) {

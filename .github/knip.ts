@@ -12,12 +12,7 @@ const config: KnipConfig = {
     "tests/dev-start.ts",
   ],
   project: ["src/**/*.ts", "tests/**/*.ts"],
-  ignore: [
-    "src/types/config.ts",
-    "**/__mocks__/**",
-    "**/__fixtures__/**",
-    "dist/*"
-  ],
+  ignore: ["src/types/config.ts", "**/__mocks__/**", "**/__fixtures__/**", "dist/*"],
   ignoreExportsUsedInFile: true,
   ignoreDependencies: [
     // Runtime dependencies
@@ -36,7 +31,7 @@ const config: KnipConfig = {
     "eslint-plugin-prettier",
     "eslint-plugin-sonarjs",
     "tsx",
-    "typescript-eslint"
+    "typescript-eslint",
   ],
   eslint: true,
 };
