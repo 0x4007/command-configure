@@ -1,5 +1,4 @@
 export async function renderPrompt(originalContent: string, parserCode: string, manifests: string, repoUrl: string): Promise<string> {
-  // eslint-disable-next-line sonarjs/prefer-immediate-return
   const prompt = [
     `As a YAML configuration editor, modify the following YAML file according to the user's instructions, ensuring valid syntax and preserving formatting. Pay special attention to list indicators (hyphens \`-\`); ensure they are retained and not removed, especially for list items like plugins. Correct any syntax errors in the original YAML.
 

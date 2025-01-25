@@ -39,7 +39,7 @@ describe("Plugin tests", () => {
 
   it("Should serve the manifest file", async () => {
     const worker = (await import("../src/worker")).default;
-    const response = await worker.fetch(new Request("http://localhost/manifest.json"), {});
+    const response = await worker.fetch(new Request("https://localhost/manifest.json"), {});
     const content = await response.json();
     expect(content).toEqual(manifest);
   });
@@ -95,11 +95,11 @@ describe("Plugin tests", () => {
     const input = `
 plugins:
   - uses:
-    - plugin: http://github.com/org/repo1
-    - plugin: http://github.com/org/repo2
+    - plugin: https://github.com/org/repo1
+    - plugin: https://github.com/org/repo2
 `;
     const result = parsePluginUrls(input);
-    expect(result).toEqual(["http://github.com/org/repo1/manifest.json", "http://github.com/org/repo2/manifest.json"]);
+    expect(result).toEqual(["https://github.com/org/repo1/manifest.json", "https://github.com/org/repo2/manifest.json"]);
   });
 
   it("getDefaultBranch returns main as fallback", async () => {

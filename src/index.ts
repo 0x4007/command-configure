@@ -12,7 +12,8 @@ export async function runPlugin(context: Context) {
   if (isIssueCommentEvent(context)) {
     const { body } = context.payload.comment;
 
-    if (body.match(/^\/config/i)) {
+    const configCommandPattern = /^\/config/i;
+    if (configCommandPattern.exec(body)) {
       return await syncConfigs(context);
     }
 

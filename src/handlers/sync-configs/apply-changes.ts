@@ -36,19 +36,17 @@ function createCommitMessage(instruction: string, isGitHubActions: boolean): str
   return ["chore: update configuration using UbiquityOS Configurations Agent", instruction].join("\n\n");
 }
 
-export async function applyChanges({
+export async function applyChangesInteractive({
   target,
   filePath,
   modifiedContent,
   instruction,
-  isInteractive,
   forceBranch,
 }: {
   target: Target;
   filePath: string;
   modifiedContent: string;
   instruction: string;
-  isInteractive: boolean;
   forceBranch?: string;
 }) {
   const git = initializeGit(target.localDir);
@@ -63,21 +61,12 @@ export async function applyChanges({
   await git.pull("origin", defaultBranch);
 
   fs.writeFileSync(filePath, modifiedContent, "utf8");
-  await git.add(target.filePath);
-  await git.commit(createCommitMessage(instruction, isGitHubActions));
+  await git.add([target.filePath]);
+  await git.commit(createCommitMessage(instruction, isGitHubActions), { "--no-verify": null });
 
   try {
-    const branchName = `sync-configs-${Date.now()}`;
-
-    if (isGitHubActions) {
-      await pushToGitHubActions(git, target, branchName, isInteractive);
-    } else {
-      await pushToLocalDevelopment(git, target, branchName, defaultBranch, isInteractive);
-    }
-
-    if (!isInteractive) {
-      await createAndLogPullRequest(target, branchName, defaultBranch, instruction);
-    }
+    await git.push("origin", defaultBranch);
+    console.log(`Changes pushed to ${target.url} in branch ${defaultBranch}`);
   } catch (error) {
     if (error instanceof Error) {
       console.error(`Error applying changes to ${target.url}:`, error.message);
@@ -91,29 +80,54 @@ export async function applyChanges({
   }
 }
 
-async function pushToGitHubActions(git: SimpleGit, target: Target, branchName: string, isInteractive: boolean) {
-  console.log(`Attempting to push to ${target.url}...`);
+export async function applyChangesNonInteractive({
+  target,
+  filePath,
+  modifiedContent,
+  instruction,
+  forceBranch,
+}: {
+  target: Target;
+  filePath: string;
+  modifiedContent: string;
+  instruction: string;
+  forceBranch?: string;
+}) {
+  const git = initializeGit(target.localDir);
+  const isGitHubActions = !!process.env.GITHUB_ACTIONS;
+  const branchName = `sync-configs-${Date.now()}`;
 
-  if (!isInteractive) {
-    try {
-      await git.checkoutLocalBranch(branchName);
-      await git.push("origin", branchName, ["-u"]);
-      console.log(`Successfully pushed branch ${branchName} to ${target.url}`);
-    } catch (error) {
-      console.error("Push failed with error:", error);
-      console.error(`Note: Ensure @${process.env.ACTOR} has write access to ${target.url}`);
-      throw error;
-    }
-  }
-}
+  console.log(`Operating in ${isGitHubActions ? "GitHub Actions" : "local"} environment`);
 
-async function pushToLocalDevelopment(git: SimpleGit, target: Target, branchName: string, defaultBranch: string, isInteractive: boolean) {
-  if (isInteractive) {
-    await git.push("origin", defaultBranch);
-    console.log(`Changes pushed to ${target.url} in branch ${defaultBranch}`);
-  } else {
+  await setupAuthentication(git, target.url);
+  const defaultBranch = forceBranch || (await getDefaultBranch(target.url));
+
+  await git.checkout(defaultBranch);
+  await git.pull("origin", defaultBranch);
+
+  fs.writeFileSync(filePath, modifiedContent, "utf8");
+  await git.add([target.filePath]);
+  await git.commit(createCommitMessage(instruction, isGitHubActions), { "--no-verify": null });
+
+  try {
     await git.checkoutLocalBranch(branchName);
     await git.push("origin", branchName, ["-u"]);
+    console.log(`Successfully pushed branch ${branchName} to ${target.url}`);
+
+    await createAndLogPullRequest(target, branchName, defaultBranch, instruction);
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error(`Error applying changes to ${target.url}:`, error.message);
+      if (error.stack) {
+        console.error("Stack trace:", error.stack);
+      }
+      if (isGitHubActions) {
+        console.error(`Note: Ensure @${process.env.ACTOR} has write access to ${target.url}`);
+      }
+    } else {
+      console.error(`Error applying changes to ${target.url}:`, error);
+    }
+    throw error;
   }
 }
 

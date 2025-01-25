@@ -26,13 +26,14 @@ if (argv.length > 0) {
 targetUrls.unshift(parserTarget);
 
 export const targets: Target[] = targetUrls.flatMap(({ type, url }) => {
-  const match = url.match(/github\.com\/([^/]+)\/([^/]+)(\.git)?$/);
+  const githubUrlPattern = /github\.com\/([^/]+)\/([^/]+)(\.git)?$/;
+  const match = githubUrlPattern.exec(url);
   if (!match) {
     throw new Error(`Invalid GitHub URL: ${url}`);
   }
 
-  const owner = match[1];
-  const repo = match[2].replace(".git", "");
+  const [, owner, repoWithGit] = match;
+  const repo = repoWithGit.replace(".git", "");
   const isKernel = type === "parser";
   const localDir = path.join(owner, repo);
 

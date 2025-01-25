@@ -1,8 +1,8 @@
 // @ts-check
-import tsEslint from "typescript-eslint";
 import eslint from "@eslint/js";
-import sonarjs from "eslint-plugin-sonarjs";
 import checkFile from "eslint-plugin-check-file";
+import sonarjs from "eslint-plugin-sonarjs";
+import tsEslint from "typescript-eslint";
 
 export default tsEslint.config({
   plugins: {
@@ -69,12 +69,14 @@ export default tsEslint.config({
     "sonarjs/no-element-overwrite": "error",
     "sonarjs/no-identical-conditions": "error",
     "sonarjs/no-identical-expressions": "error",
-    "sonarjs/new-cap": "off",
-    "sonarjs/different-types-comparison": "off",
-    "sonarjs/sonar-prefer-regexp-exec": "off",
-    "sonarjs/function-return-type": "off",
-    "sonarjs/no-misleading-array-reverse": "off",
-    "sonarjs/slow-regex": "off",
+    "sonarjs/prefer-immediate-return": "error",
+    "sonarjs/no-redundant-jump": "error",
+    "sonarjs/no-same-line-conditional": "error",
+    "sonarjs/no-small-switch": "error",
+    "sonarjs/no-unused-collection": "error",
+    "sonarjs/prefer-object-literal": "error",
+    "sonarjs/prefer-single-boolean-return": "error",
+    "sonarjs/prefer-while": "error",
     "@typescript-eslint/naming-convention": [
       "error",
       {
