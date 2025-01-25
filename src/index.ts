@@ -1,4 +1,3 @@
-import { helloWorld } from "./handlers/hello-world";
 import { syncConfigs } from "./handlers/sync-configs";
 import { Context } from "./types";
 import { isIssueCommentEvent } from "./types/typeguards";
@@ -16,8 +15,6 @@ export async function runPlugin(context: Context) {
     if (configCommandPattern.exec(body)) {
       return await syncConfigs(context);
     }
-
-    return await helloWorld(context);
   }
 
   logger.error(`Unsupported event: ${eventName}`);

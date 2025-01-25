@@ -38,7 +38,13 @@ describe("Plugin tests", () => {
 
   it("Should serve the manifest file", async () => {
     const worker = (await import("../src/worker")).default;
-    const response = await worker.fetch(new Request("https://localhost/manifest.json"), {});
+    const response = await worker.fetch(new Request("https://localhost/manifest.json"), {
+      ANTHROPIC_API_KEY: "test-key",
+      EDITOR_INSTRUCTION: "test-instruction",
+      INTERACTIVE: "true",
+      ACTOR: "test-actor",
+      EMAIL: "test@example.com",
+    });
     const content = await response.json();
     expect(content).toEqual(manifest);
   });
@@ -62,31 +68,6 @@ describe("Plugin tests", () => {
     expect(infoSpy).toHaveBeenNthCalledWith(1, STRINGS.HELLO_WORLD);
     expect(okSpy).toHaveBeenNthCalledWith(2, STRINGS.SUCCESSFULLY_CREATED_COMMENT);
     expect(verboseSpy).toHaveBeenNthCalledWith(1, STRINGS.EXITING_HELLO_WORLD);
-  });
-
-  it("Should respond with `Hello, World!` in response to /Hello", async () => {
-    const { context } = createContext();
-    await runPlugin(context);
-    const comments = db.issueComments.getAll();
-    expect(comments.length).toBe(1);
-    expect(comments[0].body).toMatch(STRINGS.HELLO_WORLD);
-  });
-
-  it("Should respond with `Hello, Code Reviewers` in response to /Hello", async () => {
-    const { context } = createContext(STRINGS.CONFIGURABLE_RESPONSE);
-    await runPlugin(context);
-    const comments = db.issueComments.getAll();
-    expect(comments.length).toBe(1);
-    expect(comments[0].body).toMatch(STRINGS.CONFIGURABLE_RESPONSE);
-  });
-
-  it("Should not respond to a comment that doesn't contain /Hello", async () => {
-    const { context, errorSpy } = createContext(STRINGS.CONFIGURABLE_RESPONSE, STRINGS.INVALID_COMMAND);
-    await runPlugin(context);
-    const comments = db.issueComments.getAll();
-
-    expect(comments.length).toBe(1);
-    expect(errorSpy).toHaveBeenNthCalledWith(1, STRINGS.INVALID_USE_OF_SLASH_COMMAND, { caller: STRINGS.CALLER_LOGS_ANON, body: STRINGS.INVALID_COMMAND });
   });
 
   // Sync Configs Tests

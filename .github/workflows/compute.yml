@@ -21,7 +21,7 @@ on:
         description: "Command from the Kernel"
 
 jobs:
-  compute:
+  start:
     name: "command-config"
     runs-on: ubuntu-latest
     permissions: write-all
