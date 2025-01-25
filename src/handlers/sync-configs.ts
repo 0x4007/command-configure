@@ -11,8 +11,8 @@ export async function syncConfigs(context: Context) {
   const issueNumber = payload.issue.number;
   const owner = payload.repository.owner.login;
   const body = payload.comment.body;
-  if (!/sync-configs/i.exec(body)) {
-    logger.error(`Invalid use of slash command, use "/sync-configs".`, { body });
+  if (!/config/i.exec(body)) {
+    logger.error(`Invalid use of slash command, use "/config".`, { body });
     return;
   }
 
