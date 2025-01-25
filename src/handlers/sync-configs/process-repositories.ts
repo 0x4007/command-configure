@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import path from "path";
+import { getDefaultBranch } from "./get-default-branch";
 import { processConfigurationRepository } from "./process-configuration-repository";
 import { STORAGE_DIR } from "./sync-configs-agent";
 import { targets } from "./targets";
@@ -21,6 +22,15 @@ export async function processRepositories(instruction: string) {
     throw new Error(`Parser file ${parserFilePath} does not exist. Unable to proceed.`);
   }
   const parserCode = fs.readFileSync(parserFilePath, "utf8");
+
+  // Fetch default branches for all repositories upfront
+  for (const target of targets) {
+    if (target.type !== "parser") {
+      if (!target.defaultBranch) {
+        target.defaultBranch = await getDefaultBranch(target.owner, target.repo);
+      }
+    }
+  }
 
   for (const target of targets) {
     if (target.type !== "parser") {

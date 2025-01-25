@@ -53,18 +53,20 @@ export async function applyChangesInteractive({
   console.log(`Operating in ${isGitHubActions ? "GitHub Actions" : "local"} environment`);
 
   await setupAuthentication(git, target.url);
-  const defaultBranch = await getDefaultBranch(target.owner, target.repo);
+  if (!target.defaultBranch) {
+    target.defaultBranch = await getDefaultBranch(target.owner, target.repo);
+  }
 
-  await git.checkout(defaultBranch);
-  await git.pull("origin", defaultBranch);
+  await git.checkout(target.defaultBranch);
+  await git.pull("origin", target.defaultBranch);
 
   fs.writeFileSync(filePath, modifiedContent, "utf8");
   await git.add([target.filePath]);
   await git.commit(createCommitMessage(instruction, isGitHubActions), { "--no-verify": null });
 
   try {
-    await git.push("origin", defaultBranch);
-    console.log(`Changes pushed to ${target.url} in branch ${defaultBranch}`);
+    await git.push("origin", target.defaultBranch);
+    console.log(`Changes pushed to ${target.url} in branch ${target.defaultBranch}`);
   } catch (error) {
     if (error instanceof Error) {
       console.error(`Error applying changes to ${target.url}:`, error.message);
@@ -96,10 +98,12 @@ export async function applyChangesNonInteractive({
   console.log(`Operating in ${isGitHubActions ? "GitHub Actions" : "local"} environment`);
 
   await setupAuthentication(git, target.url);
-  const defaultBranch = await getDefaultBranch(target.owner, target.repo);
+  if (!target.defaultBranch) {
+    target.defaultBranch = await getDefaultBranch(target.owner, target.repo);
+  }
 
-  await git.checkout(defaultBranch);
-  await git.pull("origin", defaultBranch);
+  await git.checkout(target.defaultBranch);
+  await git.pull("origin", target.defaultBranch);
 
   fs.writeFileSync(filePath, modifiedContent, "utf8");
   await git.add([target.filePath]);
@@ -110,7 +114,7 @@ export async function applyChangesNonInteractive({
     await git.push("origin", branchName, ["-u"]);
     console.log(`Successfully pushed branch ${branchName} to ${target.url}`);
 
-    await createAndLogPullRequest(target, branchName, defaultBranch, instruction);
+    await createAndLogPullRequest(target, branchName, target.defaultBranch, instruction);
   } catch (error) {
     if (error instanceof Error) {
       console.error(`Error applying changes to ${target.url}:`, error.message);

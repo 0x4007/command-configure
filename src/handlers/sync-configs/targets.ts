@@ -78,4 +78,5 @@ export type Target = {
   localDir: string;
   url: string;
   filePath: string;
+  defaultBranch?: string; // Optional default branch, set after fetching from GitHub
 };

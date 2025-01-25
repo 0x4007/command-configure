@@ -1,13 +1,7 @@
 import { appAuthenticatedOctokit } from "./create-pull-request";
 import { getDefaultBranch } from "./get-default-branch";
 import { processConfigurationRepository } from "./process-configuration-repository";
-
-export interface Target {
-  owner: string;
-  repo: string;
-  type: "parser" | "config";
-  filePath: string;
-}
+import { Target } from "./targets";
 
 export interface SyncResult {
   repository: string;
@@ -26,14 +20,22 @@ export async function syncConfigsNonInteractive(targets: Target[]): Promise<Sync
       throw new Error("Parser repository configuration not found");
     }
 
-    // Get default branch for parser repo
-    const parserDefaultBranch = await getDefaultBranch(parserRepo.owner, parserRepo.repo);
+    // Fetch default branches for all repositories upfront
+    for (const target of targets) {
+      if (!target.defaultBranch) {
+        target.defaultBranch = await getDefaultBranch(target.owner, target.repo);
+      }
+    }
 
+    // Also fetch for parser repo if not already set
+    if (!parserRepo.defaultBranch) {
+      parserRepo.defaultBranch = await getDefaultBranch(parserRepo.owner, parserRepo.repo);
+    }
     const { data: parserContent } = await appAuthenticatedOctokit.repos.getContent({
       owner: parserRepo.owner,
       repo: parserRepo.repo,
       path: parserRepo.filePath,
-      ref: parserDefaultBranch,
+      ref: parserRepo.defaultBranch,
     });
 
     if (!("content" in parserContent)) {

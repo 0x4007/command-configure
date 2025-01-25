@@ -1,22 +1,23 @@
 import { appAuthenticatedOctokit } from "./create-pull-request";
-import { getDefaultBranch } from "./get-default-branch";
 import { getModifiedContent } from "./get-modified-content";
+import { Target } from "./targets";
 
-interface Target {
-  owner: string;
-  repo: string;
-  type: string;
-  filePath: string;
-}
-
-export async function processConfigurationRepository(target: Target, instruction: string, parserCode: string) {
+export async function processConfigurationRepository(
+  target: Target,
+  instruction: string,
+  parserCode: string
+) {
   try {
+    if (!target.defaultBranch) {
+      throw new Error(`Default branch not set for repository ${target.owner}/${target.repo}`);
+    }
+
     // Get current file content
     const { data: fileData } = await appAuthenticatedOctokit.repos.getContent({
       owner: target.owner,
       repo: target.repo,
       path: target.filePath,
-      ref: await getDefaultBranch(target.owner, target.repo),
+      ref: target.defaultBranch,
     });
 
     if (!("content" in fileData)) {
@@ -39,13 +40,11 @@ export async function processConfigurationRepository(target: Target, instruction
     const timestamp = new Date().getTime();
     const newBranch = `sync-configs-${timestamp}`;
 
-    const branch = await getDefaultBranch(target.owner, target.repo);
-
     // Get the current commit SHA
     const { data: ref } = await appAuthenticatedOctokit.git.getRef({
       owner: target.owner,
       repo: target.repo,
-      ref: `heads/${branch}`,
+      ref: `heads/${target.defaultBranch}`,
     });
 
     // Create new branch
@@ -100,7 +99,7 @@ export async function processConfigurationRepository(target: Target, instruction
       repo: target.repo,
       title: "Sync configurations",
       head: newBranch,
-      base: branch,
+      base: target.defaultBranch,
       body: "This pull request was automatically created by the sync-configs plugin to update configurations.",
     });
 
