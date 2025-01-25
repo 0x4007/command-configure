@@ -5,8 +5,17 @@ import { getDefaultBranch } from "./get-default-branch";
 import { STORAGE_DIR } from "./sync-configs-agent";
 import { Target } from "./targets";
 
-// Clean up any stale git lock files
-function cleanupGitLocks(repoPath: string) {
+interface GitConfig {
+  name: string;
+  email: string;
+}
+
+const BOT_CONFIG: GitConfig = {
+  name: "ubiquity-os[bot]",
+  email: "ubiquity-os[bot]@users.noreply.github.com",
+};
+
+function cleanupGitLocks(repoPath: string): void {
   const lockFiles = [path.join(repoPath, ".git", "index.lock"), path.join(repoPath, ".git", "HEAD.lock")];
 
   for (const lockFile of lockFiles) {
@@ -21,62 +30,76 @@ function cleanupGitLocks(repoPath: string) {
   }
 }
 
-export async function cloneOrPullRepo(target: Target): Promise<void> {
-  const repoPath = path.join(__dirname, STORAGE_DIR, target.localDir);
-  const token = process.env.AUTH_TOKEN;
+function getAuthenticatedUrl(url: string, token: string | undefined): string {
+  if (!token) return url;
+  return url.replace("https://github.com", `https://${BOT_CONFIG.name}:${token}@github.com`);
+}
 
+async function configureBotIdentity(git: SimpleGit): Promise<void> {
+  await git.addConfig("user.name", BOT_CONFIG.name, false, "local");
+  await git.addConfig("user.email", BOT_CONFIG.email, false, "local");
+}
+
+async function updateExistingRepo(git: SimpleGit, target: Target): Promise<void> {
+  try {
+    await configureBotIdentity(git);
+
+    if (!target.defaultBranch) {
+      target.defaultBranch = await getDefaultBranch(target.owner, target.repo);
+    }
+
+    console.log(`Fetching updates for ${target.url}...`);
+    await git.fetch("origin");
+    await git.reset(["--hard", `origin/${target.defaultBranch}`]);
+    console.log(`Successfully updated ${target.url}`);
+  } catch (error) {
+    console.error(`Error updating ${target.url}:`, error);
+    throw error;
+  }
+}
+
+async function cloneNewRepo(authenticatedUrl: string, repoPath: string, target: Target): Promise<void> {
+  try {
+    console.log(`Cloning ${target.url}...`);
+    fs.mkdirSync(repoPath, { recursive: true });
+    cleanupGitLocks(repoPath);
+
+    const git: SimpleGit = simpleGit();
+    await git.clone(authenticatedUrl, repoPath);
+
+    const localGit = git.cwd(repoPath);
+    await configureBotIdentity(localGit);
+
+    console.log(`Successfully cloned ${target.url}`);
+  } catch (error) {
+    console.error(`Error cloning ${target.url}:`, error);
+    throw error;
+  }
+}
+
+function validateToken(): void {
+  const token = process.env.AUTH_TOKEN;
   if (!token && process.env.GITHUB_ACTIONS) {
     throw new Error("AUTH_TOKEN is not set");
   }
+}
 
-  // Prepare authenticated URL if we have a token
-  const authenticatedUrl = token ? target.url.replace("https://github.com", `https://ubiquity-os[bot]:${token}@github.com`) : target.url;
+export async function cloneOrPullRepo(target: Target): Promise<void> {
+  validateToken();
+
+  const repoPath = path.join(__dirname, STORAGE_DIR, target.localDir);
+  const authenticatedUrl = getAuthenticatedUrl(target.url, process.env.AUTH_TOKEN);
 
   if (fs.existsSync(repoPath)) {
-    // Clean up any stale locks before git operations
     cleanupGitLocks(repoPath);
-    // The repository directory exists; initialize git with this directory
     const git: SimpleGit = simpleGit(repoPath);
 
     if (await git.checkIsRepo()) {
-      try {
-        // Configure git locally with bot identity
-        await git.addConfig("user.name", "ubiquity-os[bot]", false, "local");
-        await git.addConfig("user.email", "ubiquity-os[bot]@users.noreply.github.com", false, "local");
-
-        if (!target.defaultBranch) {
-          target.defaultBranch = await getDefaultBranch(target.owner, target.repo);
-        }
-
-        console.log(`Fetching updates for ${target.url}...`);
-        await git.fetch("origin");
-        await git.reset(["--hard", `origin/${target.defaultBranch}`]);
-        console.log(`Successfully updated ${target.url}`);
-      } catch (error) {
-        console.error(`Error updating ${target.url}:`, error);
-        throw error;
-      }
+      await updateExistingRepo(git, target);
     } else {
-      console.error(`Directory ${repoPath} exists but is not a git repository.`);
+      throw new Error(`Directory ${repoPath} exists but is not a git repository.`);
     }
   } else {
-    // The directory does not exist; create it and perform git clone
-    try {
-      console.log(`Cloning ${target.url}...`);
-      fs.mkdirSync(repoPath, { recursive: true });
-      cleanupGitLocks(repoPath);
-      const git: SimpleGit = simpleGit();
-      await git.clone(authenticatedUrl, repoPath);
-
-      // After clone, configure the repository with bot identity
-      const localGit = git.cwd(repoPath);
-      await localGit.addConfig("user.name", "ubiquity-os[bot]", false, "local");
-      await localGit.addConfig("user.email", "ubiquity-os[bot]@users.noreply.github.com", false, "local");
-
-      console.log(`Successfully cloned ${target.url}`);
-    } catch (error) {
-      console.error(`Error cloning ${target.url}:`, error);
-      throw error;
-    }
+    await cloneNewRepo(authenticatedUrl, repoPath, target);
   }
 }
