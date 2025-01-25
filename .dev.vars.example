@@ -1,1 +1,12 @@
-MY_SECRET="MY_SECRET"
+# Claude API key for configuration updates
+ANTHROPIC_API_KEY=your_api_key_here
+
+# Default instruction for non-interactive mode
+EDITOR_INSTRUCTION=insert all missing defaults
+
+# Always run in non-interactive mode for GitHub bot
+INTERACTIVE=false
+
+# Bot identity
+ACTOR=ubiquity-os[bot]
+EMAIL=ubiquity-os[bot]@users.noreply.github.com
