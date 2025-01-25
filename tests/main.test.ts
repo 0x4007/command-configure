@@ -1,10 +1,14 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { drop } from "@mswjs/data";
+import { Octokit as RestOctokit } from "@octokit/rest";
 import { customOctokit as Octokit } from "@ubiquity-os/plugin-sdk/octokit";
 import { Logs } from "@ubiquity-os/ubiquity-os-logger";
 import dotenv from "dotenv";
 import manifest from "../manifest.json";
 import { runPlugin } from "../src";
+import { getDefaultBranch } from "../src/handlers/sync-configs/get-default-branch";
+import { getModifiedContent } from "../src/handlers/sync-configs/get-modified-content";
+import { parsePluginUrls } from "../src/handlers/sync-configs/parse-plugin-urls";
 import { Env } from "../src/types";
 import { Context } from "../src/types/context";
 import { db } from "./__mocks__/db";
@@ -14,6 +18,9 @@ import { STRINGS } from "./__mocks__/strings";
 
 dotenv.config();
 const octokit = new Octokit();
+
+// Set environment variable for mock response
+process.env.USE_MOCK_CLAUDE_RESPONSE = "true";
 
 beforeAll(() => {
   server.listen();
@@ -81,6 +88,44 @@ describe("Plugin tests", () => {
 
     expect(comments.length).toBe(1);
     expect(errorSpy).toHaveBeenNthCalledWith(1, STRINGS.INVALID_USE_OF_SLASH_COMMAND, { caller: STRINGS.CALLER_LOGS_ANON, body: STRINGS.INVALID_COMMAND });
+  });
+
+  // Sync Configs Tests
+  it("parsePluginUrls parses plugin URLs correctly", () => {
+    const input = `
+plugins:
+  - uses:
+    - plugin: http://github.com/org/repo1
+    - plugin: http://github.com/org/repo2
+`;
+    const result = parsePluginUrls(input);
+    expect(result).toEqual([
+      "http://github.com/org/repo1/manifest.json",
+      "http://github.com/org/repo2/manifest.json"
+    ]);
+  });
+
+  it("getDefaultBranch returns main as fallback", async () => {
+    const octokit = new RestOctokit();
+    const owner = "org";
+    const repo = "repo";
+    const branch = await getDefaultBranch(octokit, owner, repo);
+    expect(branch).toBe("main");
+  });
+
+  it("getModifiedContent uses mock response", async () => {
+    const original = "plugins:\n  - url: https://github.com/org/repo";
+    const instruction = "Update the config";
+    const parserCode = "function parseConfig(yaml) { return yaml; }";
+    const repoUrl = "https://github.com/org/repo";
+
+    const modified = await getModifiedContent(
+      original,
+      instruction,
+      parserCode,
+      repoUrl
+    );
+    expect(modified).toBeTruthy();
   });
 });
 
@@ -154,7 +199,13 @@ function createContextInner(
     config: {
       configurableResponse,
     },
-    env: {} as Env,
+    env: {
+      ANTHROPIC_API_KEY: "test-key",
+      EDITOR_INSTRUCTION: "test-instruction",
+      INTERACTIVE: "true",
+      ACTOR: "test-actor",
+      EMAIL: "test@example.com"
+    } as Env,
     octokit: octokit,
   } as unknown as Context;
 }

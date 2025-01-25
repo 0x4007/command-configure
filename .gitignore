@@ -16,4 +16,4 @@ cypress/screenshots
 script.ts
 .wrangler
 test-dashboard.md
-src/handlers/fixtures/.git-credentials
+.git-credentials
