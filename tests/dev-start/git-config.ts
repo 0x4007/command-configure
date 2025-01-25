@@ -26,7 +26,7 @@ export async function configureGit(): Promise<string> {
     fs.mkdirSync(fixturesPath, { recursive: true });
 
     // Get list of target repositories
-    const { targets } = await import("../../src/sync-configs/targets");
+    const { targets } = await import("../../src/handlers/sync-configs/targets");
 
     // Generate GitHub token using first target's credentials
     const token = await generateGitHubAppToken(targets[0].owner, targets[0].repo);
