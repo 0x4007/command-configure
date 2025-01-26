@@ -11,7 +11,7 @@ export const pluginSettingsSchema = T.Object(
   {
     // configurableResponse: T.String({ default: "Hello, world!" }),
     // customStringsUrl: T.Optional(T.String()),
-    claudeApiKey: T.String(),
+    // claudeApiKey: T.String(),
   },
   { default: {} }
 );
