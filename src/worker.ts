@@ -1,6 +1,6 @@
-import { LOG_LEVEL, LogLevel } from "@ubiquity-os/ubiquity-os-logger";
 import { createPlugin } from "@ubiquity-os/plugin-sdk";
 import { Manifest } from "@ubiquity-os/plugin-sdk/manifest";
+import { LOG_LEVEL, LogLevel } from "@ubiquity-os/ubiquity-os-logger";
 import { ExecutionContext } from "hono";
 import manifest from "../manifest.json";
 import { runPlugin } from "./index";
@@ -9,8 +9,9 @@ import { Env, envSchema, PluginSettings, pluginSettingsSchema, SupportedEvents }
 export default {
   async fetch(request: Request, env: Env, executionCtx?: ExecutionContext) {
     return createPlugin<PluginSettings, Env, null, SupportedEvents>(
-      (context) => {
-        return runPlugin(context);
+      async (context) => {
+        const result = await runPlugin(context);
+        return result as unknown as Record<string, unknown>;
       },
       manifest as Manifest,
       {

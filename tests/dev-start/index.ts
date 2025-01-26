@@ -41,7 +41,7 @@ export async function devStart(repoUrl?: string) {
 
     // Run sync configs directly
     console.log("Starting configuration sync...");
-    const results = await syncConfigsNonInteractive(targets);
+    const results = await syncConfigsNonInteractive(targets, process.env.ANTHROPIC_API_KEY || "");
     console.log("Sync results:", JSON.stringify(results, null, 2));
 
     console.log("Script completed successfully");

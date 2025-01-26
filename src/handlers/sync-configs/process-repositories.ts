@@ -34,7 +34,7 @@ export async function processRepositories(instruction: string) {
 
   for (const target of targets) {
     if (target.type !== "parser") {
-      await processConfigurationRepository(target, instruction, parserCode);
+      await processConfigurationRepository(target, instruction, parserCode, process.env.ANTHROPIC_API_KEY || "");
     }
   }
 }

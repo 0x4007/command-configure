@@ -50,7 +50,7 @@ describe("Plugin tests", () => {
   });
 
   it("Should handle an issue comment event", async () => {
-    const { context, infoSpy, errorSpy, debugSpy, okSpy, verboseSpy } = createContext();
+    const { context, infoSpy, errorSpy, debugSpy, okSpy, verboseSpy } = createContext("Hello, world!", "/Hello", 1, 1, 1, 1);
 
     expect(context.eventName).toBe("issue_comment.created");
     expect(context.payload.comment.body).toBe("/Hello");
@@ -95,7 +95,7 @@ plugins:
     const parserCode = "function parseConfig(yaml) { return yaml; }";
     const repoUrl = "https://github.com/org/repo";
 
-    const modified = await getModifiedContent(original, instruction, parserCode, repoUrl);
+    const modified = await getModifiedContent(original, instruction, parserCode, repoUrl, process.env.ANTHROPIC_API_KEY || "");
     expect(modified).toBeTruthy();
   });
 });
