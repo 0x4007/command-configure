@@ -2,11 +2,7 @@ import { appAuthenticatedOctokit } from "./create-pull-request";
 import { getModifiedContent } from "./get-modified-content";
 import { Target } from "./targets";
 
-export async function processConfigurationRepository(
-  target: Target,
-  instruction: string,
-  parserCode: string
-) {
+export async function processConfigurationRepository(target: Target, instruction: string, parserCode: string, apiKey: string) {
   try {
     if (!target.defaultBranch) {
       throw new Error(`Default branch not set for repository ${target.owner}/${target.repo}`);
@@ -27,7 +23,7 @@ export async function processConfigurationRepository(
     const currentContent = Buffer.from(fileData.content, "base64").toString();
 
     // Generate modified content
-    const modifiedContent = await getModifiedContent(currentContent, instruction, parserCode, `${target.owner}/${target.repo}`);
+    const modifiedContent = await getModifiedContent(currentContent, instruction, parserCode, `${target.owner}/${target.repo}`, apiKey);
 
     if (currentContent === modifiedContent) {
       return {

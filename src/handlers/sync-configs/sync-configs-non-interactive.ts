@@ -12,7 +12,7 @@ export interface SyncResult {
   }[];
 }
 
-export async function syncConfigsNonInteractive(targets: Target[]): Promise<SyncResult[]> {
+export async function syncConfigsNonInteractive(targets: Target[], apiKey: string): Promise<SyncResult[]> {
   try {
     // First get the parser code
     const parserRepo = targets.find((t) => t.type === "parser");
@@ -51,7 +51,8 @@ export async function syncConfigsNonInteractive(targets: Target[]): Promise<Sync
         const result = await processConfigurationRepository(
           target,
           "insert all missing defaults", // Default instruction
-          parserCode
+          parserCode,
+          apiKey
         );
         results.push(result);
       }

@@ -25,7 +25,7 @@ export async function syncConfigs(context: Context) {
     await postComment(context, logger.ok("Starting configuration sync process..."));
 
     // Run in non-interactive mode since this is automated
-    const changes = await syncConfigsNonInteractive(targets);
+    const changes = await syncConfigsNonInteractive(targets, context.env.ANTHROPIC_API_KEY);
 
     await postComment(context, logger.ok(`Configuration sync completed. Changes made:\n${JSON.stringify(changes, null, 2)}`));
   } catch (error) {

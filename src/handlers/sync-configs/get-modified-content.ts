@@ -3,14 +3,8 @@ import * as fs from "fs";
 import { fetchManifests } from "./fetch-manifests";
 import { parsePluginUrls } from "./parse-plugin-urls";
 import { renderPrompt } from "./render-prompt";
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
-if (!ANTHROPIC_API_KEY) {
-  console.error("Error: ANTHROPIC_API_KEY environment variable is not set.");
-  process.exit(1);
-}
-
-export async function getModifiedContent(originalContent: string, instruction: string, parserCode: string, repoUrl: string): Promise<string> {
+export async function getModifiedContent(originalContent: string, instruction: string, parserCode: string, repoUrl: string, apiKey: string): Promise<string> {
   // Short circuit with mock response if environment variable is set
   if (process.env.USE_MOCK_CLAUDE_RESPONSE === "true") {
     return fs.readFileSync("tests/fixtures/ubiquity.yml", "utf8");
@@ -21,7 +15,7 @@ export async function getModifiedContent(originalContent: string, instruction: s
   const prompt = await renderPrompt(originalContent, parserCode, JSON.stringify(manifests), repoUrl);
 
   const anthropic = new Anthropic({
-    apiKey: ANTHROPIC_API_KEY,
+    apiKey: apiKey,
   });
 
   const stream = await anthropic.messages.create({

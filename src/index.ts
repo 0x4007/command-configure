@@ -6,16 +6,17 @@ import { isIssueCommentEvent } from "./types/typeguards";
  * The main plugin function. Split for easier testing.
  */
 export async function runPlugin(context: Context) {
-  const { logger, eventName } = context;
+  const { logger } = context;
 
-  if (isIssueCommentEvent(context)) {
-    const { body } = context.payload.comment;
-
-    const configCommandPattern = /^\/config/i;
-    if (configCommandPattern.exec(body)) {
-      return await syncConfigs(context);
-    }
+  logger.debug("plugin is starting.");
+  if (!isIssueCommentEvent(context)) return;
+  logger.debug("this event is an issue comment event.");
+  const { body } = context.payload.comment;
+  const configCommandPattern = /^\/config/i;
+  if (configCommandPattern.exec(body)) {
+    logger.debug("`/config` command detected.");
+    await syncConfigs(context);
+    return logger.ok("ran `syncConfigs` successfully!");
   }
-
-  logger.error(`Unsupported event: ${eventName}`);
+  return logger.error("Unexpected error!");
 }

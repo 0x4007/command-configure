@@ -8,7 +8,7 @@ import { targets } from "./targets";
 
 export const STORAGE_DIR = "../fixtures";
 
-export async function syncConfigsAgent() {
+export async function syncConfigsAgent(env: { ANTHROPIC_API_KEY: string }) {
   const argv = process.argv.slice(2);
   const shouldPush = argv.includes("--push");
 
@@ -22,7 +22,7 @@ export async function syncConfigsAgent() {
   if (!process.env.INTERACTIVE || process.env.INTERACTIVE === "true") {
     await syncConfigsInteractive();
   } else if (process.env.INTERACTIVE === "false") {
-    await syncConfigsNonInteractive(targets);
+    await syncConfigsNonInteractive(targets, env.ANTHROPIC_API_KEY);
   } else {
     throw new Error("Invalid value for INTERACTIVE environment variable.");
   }
