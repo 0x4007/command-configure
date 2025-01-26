@@ -1,5 +1,6 @@
-import { execSync } from "child_process";
-import { GITHUB_REPO_URL, requiredEnvVars } from "./constants";
+import { syncConfigsNonInteractive } from "../../src/handlers/sync-configs/sync-configs-non-interactive";
+import { Target, targets } from "../../src/handlers/sync-configs/targets";
+import { requiredEnvVars } from "./constants";
 import { getRequiredEnvVar, validateEnvVars } from "./env-utils";
 import { configureGit } from "./git-config";
 
@@ -8,10 +9,7 @@ validateEnvVars(requiredEnvVars);
 
 let globalInstallationId: number;
 
-export async function devStart() {
-  // Use repository URL from constants
-  const repoUrl = GITHUB_REPO_URL;
-
+export async function devStart(repoUrl?: string) {
   try {
     // Configure git first and get the token
     const token = await configureGit();
@@ -20,23 +18,31 @@ export async function devStart() {
     }
     globalInstallationId = parseInt(process.env.INSTALLATION_ID);
 
-    // Run the start script with the repository URL
-    console.log("Running start script...");
-    execSync(`bun run start "${repoUrl}"`, {
-      stdio: "inherit",
-      env: {
-        ...process.env,
-        // Ensure these specific environment variables are set with proper validation
-        ANTHROPIC_API_KEY: getRequiredEnvVar("ANTHROPIC_API_KEY"),
-        EDITOR_INSTRUCTION: getRequiredEnvVar("EDITOR_INSTRUCTION"),
-        INTERACTIVE: getRequiredEnvVar("INTERACTIVE"),
-        ACTOR: getRequiredEnvVar("ACTOR"),
-        EMAIL: getRequiredEnvVar("EMAIL"),
-        AUTH_TOKEN: token,
-        INSTALLATION_ID: globalInstallationId.toString(),
-        USE_MOCK_CLAUDE_RESPONSE: "true", // Short circuit Claude response in tests
-      },
-    });
+    // Set required environment variables
+    process.env.ANTHROPIC_API_KEY = getRequiredEnvVar("ANTHROPIC_API_KEY");
+    process.env.EDITOR_INSTRUCTION = getRequiredEnvVar("EDITOR_INSTRUCTION");
+    process.env.INTERACTIVE = getRequiredEnvVar("INTERACTIVE");
+    process.env.ACTOR = getRequiredEnvVar("ACTOR");
+    process.env.EMAIL = getRequiredEnvVar("EMAIL");
+    process.env.AUTH_TOKEN = token;
+    process.env.INSTALLATION_ID = globalInstallationId.toString();
+    process.env.USE_MOCK_CLAUDE_RESPONSE = "true"; // Short circuit Claude response in tests
+
+    // If a custom repo URL is provided, update the targets
+    if (repoUrl) {
+      const [owner, repo] = repoUrl.split("/").slice(-2);
+      targets.forEach((target: Target) => {
+        if (target.type === "config") {
+          target.owner = owner;
+          target.repo = repo;
+        }
+      });
+    }
+
+    // Run sync configs directly
+    console.log("Starting configuration sync...");
+    const results = await syncConfigsNonInteractive(targets);
+    console.log("Sync results:", JSON.stringify(results, null, 2));
 
     console.log("Script completed successfully");
   } catch (error) {
