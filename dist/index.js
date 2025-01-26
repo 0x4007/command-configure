@@ -45225,16 +45225,21 @@ function isIssueCommentEvent(a) {
 }
 async function runPlugin(a) {
   const { logger: C } = a;
+  console.dir('logger.debug("plugin is starting.");');
   C.debug("plugin is starting.");
   if (!isIssueCommentEvent(a)) return;
+  console.dir('logger.debug("this event is an issue comment event.");');
   C.debug("this event is an issue comment event.");
   const { body: q } = a.payload.comment;
   const re = /^\/config/i;
   if (re.exec(q)) {
+    console.dir('logger.debug("`/config` command detected.");');
     C.debug("`/config` command detected.");
     await syncConfigs(a);
+    console.dir('return logger.ok("ran `syncConfigs` successfully!");');
     return C.ok("ran `syncConfigs` successfully!");
   }
+  console.dir('return logger.error("Unexpected error!");');
   return C.error("Unexpected error!");
 }
 var __webpack_exports__runPlugin = __webpack_exports__.b;
