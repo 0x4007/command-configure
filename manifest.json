@@ -1,9 +1,7 @@
 {
   "name": "config",
   "description": "A plugin to sync configuration files across repositories using Claude.",
-  "ubiquity:listeners": [
-    "issue_comment.created"
-  ],
+  "ubiquity:listeners": ["issue_comment.created"],
   "commands": {
     "config": {
       "ubiquity:example": "/config initialize all default values",
@@ -11,6 +9,8 @@
     }
   },
   "configuration": {
-    "default": {}
+    "default": {},
+    "type": "object",
+    "properties": {}
   }
 }
