@@ -19,6 +19,6 @@ jobs:
       - name: Run formatting checks
         run: |
           bun install
-          bun eslint --fix-dry-run --ignore-pattern dist/
-          bun format:cspell
-          bun prettier --check .
+          bun run eslint --fix-dry-run --ignore-pattern dist/
+          bun run format:cspell
+          bun run prettier --check .

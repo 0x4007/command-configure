@@ -21,7 +21,7 @@ on:
         description: "Command from the Kernel"
 
 jobs:
-  compute:
+  start-plugin:
     name: "plugin name"
     runs-on: ubuntu-latest
     permissions: write-all
@@ -37,9 +37,9 @@ jobs:
         with:
           bun-version: latest
 
-      - name: execute directive
+      - name: Start Plugin
         run: bun ./dist/index.js
-        id: plugin-name
+        id: plugin
         env:
           PLUGIN_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

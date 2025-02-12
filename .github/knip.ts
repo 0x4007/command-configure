@@ -1,13 +1,19 @@
 import type { KnipConfig } from "knip";
 
-const config: KnipConfig = {
-  entry: ["src/action.ts", "src/worker.ts"],
-  project: ["src/**/*.ts"],
+export const config: KnipConfig = {
+  entry: [
+    // Main entry points
+    "src/action.ts",
+    "src/worker.ts",
+    "src/index.ts",
+    // Test files
+    "tests/**/*.ts",
+    // Dev scripts
+    "tests/dev-start.ts",
+  ],
+  project: ["src/**/*.ts", "tests/**/*.ts"],
   ignore: ["src/types/config.ts", "**/__mocks__/**", "**/__fixtures__/**", "dist/*"],
   ignoreExportsUsedInFile: true,
-  // eslint can also be safely ignored as per the docs: https://knip.dev/guides/handling-issues#eslint--jest
-  ignoreDependencies: ["ts-node"],
+  ignoreDependencies: ["ts-node"], // Only ignore ts-node as it's used by the runtime
   eslint: true,
 };
-
-export default config;
